@@ -1,4 +1,4 @@
-package com.hoaxify.ws.user.shared;
+package com.hoaxify.ws.shared;
 
 public record GenericMessage (String message){
     
