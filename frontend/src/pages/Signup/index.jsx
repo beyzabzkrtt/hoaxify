@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { signUp } from "./api";
 import { Input } from "./components/Input";
 
@@ -31,6 +31,15 @@ export function SignUp() {
       })
     },[email])
 
+    useEffect(() => {
+      setErrors(function(lastErrors){
+        return {
+          ...lastErrors,
+          password:undefined
+        }
+      })
+    },[password])
+
     const onSubmit = async (event) => {
       event.preventDefault();
       setSuccessMessage();
@@ -55,6 +64,14 @@ export function SignUp() {
     }
     };  
 
+    const passwordRepeatError = useMemo(() => {
+      if(password && password !== passwordRepeat){
+            return'Password mismatch';
+          }
+          return '';
+    },[password,passwordRepeat]);
+    
+
     console.log(username)
     console.log(email)
     console.log(password)
@@ -68,27 +85,28 @@ export function SignUp() {
           <h1>Sign Up</h1>
         </div>
       <div className="card-body">
-        <Input id="username" label="Username" error={errors.username} 
-        onChange={(event) => 
-            setUsername(event.target.value)}/>
-        <Input id="email" label="E-mail" error={errors.email} 
-        onChange={(event) => setEmail(event.target.value)}/>
-      {/* <div className="mb-3">
-        <label htmlFor="email" className="form-label">E-mail</label>
-        <input id="email" type="text" className="form-control" onChange={(event) => setEmail(event.target.value)}/>
-      </div> */}
-
-      <div className="mb-3">
-        <label htmlFor="password" className="form-label">Password</label>
-        <input id="password" type="password" className="form-control" 
-        onChange={(event) => setPassword(event.target.value)}/>
-      </div>
-
-      <div className="mb-3">
-        <label htmlFor="passwordRepeat" className="form-label">Password Repeat</label>
-        <input id="passwordRepeat" type="password" className="form-control" 
-        onChange={(event) => setPasswordRepeat(event.target.value)}/>
-      </div>
+        <Input id="username" 
+          label="Username"
+          error={errors.username} 
+          onChange={(event) => setUsername(event.target.value)}
+          />
+        <Input id="email" 
+          label="E-mail" 
+          error={errors.email} 
+          onChange={(event) => setEmail(event.target.value)}
+          />
+        <Input id="password" 
+          label="Password" 
+          error={errors.password} 
+          onChange={(event) => setPassword(event.target.value)} 
+          type="password"
+          />
+        <Input id="passwordRepeat" 
+          label="Password Repeat" 
+          error={passwordRepeatError} 
+          onChange={(event) => setPasswordRepeat(event.target.value)} 
+          type="password"
+          />
 
       {successMessage && <div className="alert alert-success">{successMessage}</div>}
       {generalError && <div className="alert alert-danger">{generalError}</div>}
