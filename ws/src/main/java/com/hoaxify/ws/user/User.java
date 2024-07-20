@@ -1,5 +1,7 @@
 package com.hoaxify.ws.user;
 
+import com.hoaxify.ws.user.validation.UniqueEmail;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,15 +21,16 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @NotBlank
+    @NotBlank(message = "{hoaxify.constraints.username.NotBlank}")
     @Size(min = 4,max=10)
     String username;
 
-    @NotBlank
+    @NotBlank(message = "{hoaxify.constraints.email.NotBlank}")
     @Email
+    @UniqueEmail
     String email;
 
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$" )
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$" , message = "{hoaxify.constraint.password.pattern}" )
     @Size(max = 255,min = 8)
     String password;
 

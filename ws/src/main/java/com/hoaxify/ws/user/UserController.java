@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.hoaxify.ws.error.ApiError;
 import com.hoaxify.ws.shared.GenericMessage;
+import com.hoaxify.ws.shared.Messages;
+import com.hoaxify.ws.user.exception.NotUniqueEmailException;
 
 import jakarta.validation.Valid;
 
@@ -26,10 +29,13 @@ public class UserController {
     @Autowired
     UserService userService;
 
+
     @PostMapping("api/v1/users")
     GenericMessage createUser(@Valid @RequestBody User user) {
+      System.err.println(LocaleContextHolder.getLocale().getLanguage());
       userService.save(user);
-      return new GenericMessage("User is created");
+      String message = Messages.getMessageForLocale("hoaxify.create.user.success.message", LocaleContextHolder.getLocale());
+      return new GenericMessage(message);
     } 
     
      @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -37,7 +43,8 @@ public class UserController {
 
          ApiError apiError = new ApiError();
           apiError.setPath("/api/v1/users");
-          apiError.setMessage("validation error");
+          String message = Messages.getMessageForLocale("hoaxify.error.validation", LocaleContextHolder.getLocale());
+          apiError.setMessage(message);
           apiError.setStatus(400);
           Map<String,String> validationErrors = new HashMap<>();
           for(var fieldError : exception.getBindingResult().getFieldErrors()){
@@ -52,11 +59,10 @@ public class UserController {
 
          ApiError apiError = new ApiError();
           apiError.setPath("/api/v1/users");
-          apiError.setMessage("validation error");
+          apiError.setMessage(exception.getMessage());
           apiError.setStatus(400);
           Map<String,String> validationErrors = new HashMap<>();
-          validationErrors.put("email","E-mail in use");
-          apiError.setValidationErrors(validationErrors);
+          apiError.setValidationErrors(exception.getValidationErrors());
           return ResponseEntity.badRequest().body(apiError);
      }
 

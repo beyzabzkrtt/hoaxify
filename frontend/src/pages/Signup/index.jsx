@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { LanguageSelector } from "../../shared/components/LanguageSelector";
 import { signUp } from "./api";
 import { Input } from "./components/Input";
 
@@ -9,15 +11,16 @@ export function SignUp() {
     const [password,setPassword] = useState();
     const [passwordRepeat,setPasswordRepeat] = useState();
     const [apiProgress,setApiProgress] = useState(false);
-    const [successMessage,setSuccessMessage] = useState();
+    const [successMessage,setSuccessMessage] = useState('');
     const [errors,setErrors] = useState({});
-    const [generalError,setGeneralError] = useState();
+    const [generalError,setGeneralError] = useState('');
+    const { t } = useTranslation();
 
     useEffect(() => {
       setErrors(function(lastErrors){
         return {
           ...lastErrors,
-          username:undefined
+          username:undefined,
         }
       })
     },[username])
@@ -26,7 +29,7 @@ export function SignUp() {
       setErrors(function(lastErrors){
         return {
           ...lastErrors,
-          email:undefined
+          email:undefined,
         }
       })
     },[email])
@@ -35,15 +38,15 @@ export function SignUp() {
       setErrors(function(lastErrors){
         return {
           ...lastErrors,
-          password:undefined
+          password:undefined,
         }
       })
     },[password])
 
     const onSubmit = async (event) => {
       event.preventDefault();
-      setSuccessMessage();
-      setGeneralError();
+      setSuccessMessage('');
+      setGeneralError('');
       setApiProgress(true);
 
       try{
@@ -53,56 +56,55 @@ export function SignUp() {
         password
       })
       setSuccessMessage(response.data.message)
-      } catch(axiosError){ 
-        if(axiosError.response.data && axiosError.response.data.status === 400){
-          setErrors(axiosError.response.data.validationErrors);
-        } else{
-          setGeneralError("Unexpected error occured. Please try again.")
+      } catch (axiosError) {
+        if (axiosError.response?.data) {
+          if (axiosError.response.data.status === 400) {
+            setErrors(axiosError.response.data.validationErrors);
+          } else {
+            setGeneralError(axiosError.response.data.message);
+          }
+        } else {
+          setGeneralError(t("genericError"));
         }
-      } finally{
-        setApiProgress(false)
-    }
+      } finally {
+        setApiProgress(false);
+      }
     };  
 
     const passwordRepeatError = useMemo(() => {
       if(password && password !== passwordRepeat){
-            return'Password mismatch';
+            return t("passwordMismatch");
           }
           return '';
     },[password,passwordRepeat]);
     
-
-    console.log(username)
-    console.log(email)
-    console.log(password)
-    console.log(passwordRepeat)
 
   return (
     <div className="container">
       <div className="col-lg-6 offset-lg-3 col-sm-8 offset-sm-2">
         <form onSubmit={onSubmit} className="card">
         <div className="text-center card-header">
-          <h1>Sign Up</h1>
+          <h1>{t("signUp")}</h1>
         </div>
       <div className="card-body">
         <Input id="username" 
-          label="Username"
+          label={t("username")}
           error={errors.username} 
           onChange={(event) => setUsername(event.target.value)}
           />
         <Input id="email" 
-          label="E-mail" 
+          label={t("email")}
           error={errors.email} 
           onChange={(event) => setEmail(event.target.value)}
           />
         <Input id="password" 
-          label="Password" 
+          label={t("password")} 
           error={errors.password} 
           onChange={(event) => setPassword(event.target.value)} 
           type="password"
           />
         <Input id="passwordRepeat" 
-          label="Password Repeat" 
+          label={t("passwordRepeat")}
           error={passwordRepeatError} 
           onChange={(event) => setPasswordRepeat(event.target.value)} 
           type="password"
@@ -116,14 +118,16 @@ export function SignUp() {
         disabled={apiProgress || (!password || password!== passwordRepeat)} >
           {apiProgress && <span className="spinner-border spinner-border-sm" 
           aria-hidden="true"></span>}
-          Sign Up</button>
+          {t("signUp")}</button>
       </div>
       </div>
       
       
     </form>
+
+         <LanguageSelector/>   
+
       </div>
-      
     </div>
     
   );
