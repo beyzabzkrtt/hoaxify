@@ -3,6 +3,8 @@ package com.hoaxify.ws.email;
 import java.util.Properties;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,9 @@ public class EmailService {
 
     @Autowired
     HoaxifyProperties hoaxifyProperties;
+
+    @Autowired
+    MessageSource messageSource;
 
     @PostConstruct
     public void initiliaze() {
@@ -39,8 +44,8 @@ public class EmailService {
     String activationEmail = """
             <html>
                 <body>
-                    <h1>Activate Account</h1>
-                    <a href="${url}"> Click Here </a>
+                    <h1>${title}</h1>
+                    <a href="${url}">{clickHere}</a>
                 </body>
             </html>        
             """;
@@ -48,15 +53,20 @@ public class EmailService {
     public void sendActivationEmail(String email,String activationToken) {
 
         var activationUrl = hoaxifyProperties.getClient().host() + "/activation/" + activationToken;
-        var mailBody = activationEmail.replace("${url}", activationUrl);
+        var title = messageSource.getMessage("hoaxify.mail.user.created.title",null,LocaleContextHolder.getLocale());
+        var clickHere = messageSource.getMessage("hoaxify.mail.click.here", null,LocaleContextHolder.getLocale());
+
+        var mailBody = activationEmail.replace("${url}", activationUrl)
+        .replace("${title}", title)
+        .replace("${clickHere}", clickHere);
         MimeMessage mimeMessage = mailSender.createMimeMessage();
-        MimeMessageHelper message = new MimeMessageHelper(mimeMessage);
+        MimeMessageHelper message = new MimeMessageHelper(mimeMessage,"UTF-8");
         
 
         try {
             message.setFrom(hoaxifyProperties.getEmail().from());
             message.setTo(email);
-            message.setSubject("Account Activation");
+            message.setSubject(title);
             message.setText(mailBody,true);
         } catch (MessagingException e) {
             e.printStackTrace();

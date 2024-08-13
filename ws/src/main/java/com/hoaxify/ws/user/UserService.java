@@ -4,6 +4,8 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.mail.MailException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.hoaxify.ws.email.EmailService;
 import com.hoaxify.ws.user.exception.ActivationNotificationException;
+import com.hoaxify.ws.user.exception.InvalidTokenException;
 import com.hoaxify.ws.user.exception.NotUniqueEmailException;
 
 import jakarta.transaction.Transactional;
@@ -43,8 +46,22 @@ public class UserService {
        
     }
 
+    public void activateToken(String token) {
+        User inDB = userRepository.findByActivationToken(token);
+        if(inDB == null){
+            throw new InvalidTokenException();
+        }
+        inDB.setActive(true);
+        inDB.setActivationToken(null);
+        userRepository.save(inDB);
+    }
+
+    public Page<User> getUsers(Pageable pageable) {
+      return userRepository.findAll(pageable);
+    }
+
+    
 
 
-     
     
 }
