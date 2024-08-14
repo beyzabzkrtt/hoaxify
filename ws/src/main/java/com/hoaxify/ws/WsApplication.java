@@ -32,7 +32,8 @@ public class WsApplication {
 					user.setUsername("user"+i);
 					user.setEmail("user"+i+"@mail.com");
 					user.setPassword(passwordEncoder.encode("P4ssword."));
-					user.setActive(true);			
+					user.setActive(true);	
+					userRepository.save(user);		
 					
 
 				}
